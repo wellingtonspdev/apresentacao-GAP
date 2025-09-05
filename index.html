@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preparo para Apresentação: Refactoring</title>
+    <style>
+        /* Estilos Gerais */
+        :root {
+            --font-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --color-primary: #005f73;
+            --color-secondary: #0a9396;
+            --color-text: #2c3e50;
+            --color-background: #f4f7f9;
+            --color-card: #ffffff;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--color-background);
+            color: var(--color-text);
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+        }
+
+        #presentation-container {
+            width: 95%; max-width: 1200px; height: 95vh;
+            background-color: var(--color-card);
+            border-radius: 16px;
+            box-shadow: 0 12px 35px rgba(44, 62, 80, 0.15);
+            display: flex; flex-direction: column;
+            overflow: hidden; position: relative;
+        }
+
+        #slide-viewport {
+            flex-grow: 1;
+            position: relative;
+        }
+        
+        .slide {
+            box-sizing: border-box; padding: 40px 65px;
+            width: 100%; height: 100%; position: absolute;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.6s ease-in-out;
+            transform: translateY(20px);
+            overflow-y: auto;
+        }
+        
+        .slide.active { opacity: 1; visibility: visible; transform: translateY(0); }
+
+        /* Estilos de Conteúdo (Visão do Público) */
+        .audience-view h1, .audience-view h2, .audience-view h3 {
+            color: var(--color-primary);
+            border-bottom: 3px solid var(--color-secondary);
+            padding-bottom: 12px; font-weight: 700;
+        }
+        h1 { font-size: 2.8em; text-align: center; }
+        h2 { font-size: 2.2em; margin-bottom: 20px; }
+        h3 { font-size: 1.4em; }
+        p, li { font-size: 1.25em; line-height: 1.7; color: #34495e; }
+        ul { list-style-type: disc; padding-left: 30px; }
+        .quote { font-style: italic; background-color: #e9f5f5; padding: 20px; border-left: 5px solid var(--color-secondary); margin: 25px 0; font-size: 1.2em; }
+        pre { background-color: #2d2d2d; color: #e0e0e0; padding: 15px; border-radius: 8px; font-family: 'Fira Code', 'Courier New', monospace; font-size: 1em; margin-top: 10px; }
+        .center-content { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; height: 100%; }
+        .example-container { display: flex; gap: 25px; margin-top: 20px; }
+        .example-container > div { flex: 1; }
+        
+        /* Navegação */
+        #navigation { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; border-top: 1px solid #dfe6e9; background-color: #f8f9fa; }
+        #navigation button { background-color: #0077b6; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: 600; transition: background-color 0.3s ease; }
+        #navigation button:hover { background-color: #023e8a; }
+        #navigation button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        #slide-counter { font-size: 1.1em; color: #555; }
+
+    </style>
+</head>
+<body>
+
+<div id="presentation-container">
+    <div id="slide-viewport">
+        
+        <div class="slide active">
+            <div class="audience-view center-content">
+                <h1>Capítulo 9: Refactoring</h1>
+                <p>Baseado no livro "Engenharia de Software Moderna"</p>
+                <p class="quote">"Não sou um ótimo programador; sou apenas um bom programador com ótimos hábitos." – Kent Beck</p>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="audience-view">
+                <h2>O Que é Refactoring?</h2>
+                <p>É o processo de reestruturar o código para melhorar sua qualidade interna, <strong>sem alterar seu comportamento externo</strong>.</p>
+                <p class="quote"><strong>Analogia:</strong> Pense em trocar a fiação elétrica de uma casa. Para quem usa, as luzes e tomadas continuam funcionando igual. Por dentro, porém, a estrutura está mais segura, organizada e pronta para futuras ampliações.</p>
+                
+                <h2>Leis da Evolução de Software</h2>
+                <ul>
+                    <li><strong>1ª Lei (Mudança Contínua):</strong> Um sistema precisa ser continuamente adaptado ou se tornará inútil.</li>
+                    <li><strong>2ª Lei (Complexidade Crescente):</strong> Conforme um sistema evolui, sua complexidade aumenta, a menos que um trabalho seja feito para reduzi-la. Esse "trabalho" é o <strong>refactoring</strong>.</li>
+                </ul>
+                 <p class="quote"><strong>Analogia:</strong> Um software sem refactoring é como uma casa onde você só adiciona móveis e nunca arruma. Com o tempo, fica impossível andar lá dentro. Refatorar é a arrumação constante que mantém a casa funcional e organizada.</p>
+            </div>
+        </div>
+
+        <div class="slide">
+             <div class="audience-view">
+                <h2>Catálogo de Refactorings: Extrair Função</h2>
+                <p>Conhecido como o "canivete suíço" dos refactorings, consiste em extrair um trecho de código e movê-lo para uma nova função (ou método).</p>
+                <p class="quote"><strong>Analogia:</strong> O objetivo é transformar um código complexo em uma história bem contada. A função principal se torna o índice do livro, e cada função extraída é um capítulo curto e claro, com um título que diz exatamente sobre o que ele trata.</p>
+                <p><strong>Motivações Principais:</strong></p>
+                <ul>
+                    <li>Dividir funções grandes em partes menores e com responsabilidade única.</li>
+                    <li>Eliminar duplicação de código.</li>
+                    <li>Permitir o reúso da lógica extraída.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="audience-view">
+                <h2>Exemplo: Extrair Função</h2>
+                 <p>O código "Depois" se torna uma receita clara e fácil de seguir. A lógica de negócio é entendida lendo apenas os nomes das funções, sem precisar mergulhar nos detalhes de implementação a todo momento.</p>
+                <div class="example-container">
+                    <div>
+                        <h3>Antes</h3>
+                        <pre><code>def gerar_relatorio_final(pedidos):
+    clientes = carregar_clientes()
+    relatorio = "Relatório Final\n"
+
+    total_geral = 0
+    for pedido in pedidos:
+        if pedido.cliente_id in clientes:
+            total_geral += pedido.valor
+    
+    relatorio += f"Total de vendas: R$ {total_geral:.2f}\n"
+    relatorio += f"Total de pedidos: {len(pedidos)}\n"
+    
+    return relatorio</code></pre>
+                    </div>
+                    <div>
+                        <h3>Depois</h3>
+                        <pre><code>def gerar_relatorio_final(pedidos):
+    clientes = _carregar_clientes()
+    total_geral = _calcular_total(pedidos, clientes)
+    return _formatar_relatorio(total_geral, pedidos)
+
+def _calcular_total(pedidos, clientes):
+    ...
+
+def _formatar_relatorio(total, pedidos):
+    ...
+</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="audience-view">
+                <h2>Outros Refactorings Essenciais</h2>
+                <ul>
+                    <li><strong>Extrair Classe:</strong> Cria uma nova classe a partir de um conjunto de dados e comportamentos de uma classe existente.</li>
+                </ul>
+                <p class="quote"><strong>Analogia:</strong> Isso serve para juntar o que pertence um ao outro. Se a sua classe `Pessoa` guarda o DDD e o número do telefone, você está misturando conceitos. Um Telefone é uma ideia que merece sua própria "casa" (sua própria classe), com suas próprias regras e comportamentos.</p>
+                <h3>Exemplo: Extrair Classe</h3>
+                <pre><code>class Pessoa:
+    def __init__(self, nome, ddd, telefone):
+        self.nome = nome
+        self.ddd = ddd
+        self.telefone = telefone
+
+class Telefone:
+    def __init__(self, ddd, numero):
+        self.ddd = ddd
+        self.numero = numero
+
+class Pessoa:
+    def __init__(self, nome, telefone: Telefone):
+        self.nome = nome
+        self.telefone = telefone
+</code></pre>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="audience-view">
+                <h2>Como e Quando Refatorar?</h2>
+                <ul>
+                    <li><strong>A Importância dos Testes:</strong> Uma suíte de testes automatizados é sua rede de segurança. Sem testes, refatorar é arriscado.</li>
+                     <p class="quote"><strong>Analogia:</strong> Refatorar sem testes é como fazer uma cirurgia de olhos vendados. Você pode ter sorte, mas o risco de quebrar algo vital é enorme.</p>
+                    <li><strong>Refactoring Oportunista (mais comum):</strong> Feito em pequenos passos durante outras tarefas.</li>
+                     <p class="quote"><strong>Analogia (A Regra do Escoteiro):</strong> "Deixe a área do acampamento (o código) mais limpa do que você a encontrou." Sempre que mexer em um trecho de código, aproveite para fazer uma pequena melhoria.</p>
+                    <li><strong>Refactoring Planejado (mais raro):</strong> Sessões dedicadas para mudanças estruturais maiores.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="slide">
+            <div class="audience-view">
+                <h2>Code Smells (Maus Cheiros no Código)</h2>
+                <p>São "sintomas" no código que indicam um problema de design. Não são bugs, mas sinalizam que o código pode ser melhorado.</p>
+                <p class="quote"><strong>Analogia:</strong> Você não vê o fogo, mas sente o cheiro de fumaça. Um "code smell" é o cheiro de fumaça no seu código. Ele não quebra o sistema agora, mas te diz: "investigue aqui, algo pode estar errado ou prestes a dar problema".</p>
+            </div>
+        </div>
+        
+        <div class="slide">
+            <div class="audience-view">
+                <h2>Principais Code Smells (Parte 1)</h2>
+                <ul>
+                    <li><strong>Código Duplicado:</strong> O principal e mais grave. Se você precisa mudar a mesma lógica em dois lugares, um bug está esperando para acontecer.</li>
+                    <li><strong>Funções Longas:</strong> Difíceis de entender, reutilizar e testar.</li>
+                    <li><strong>Feature Envy (Inveja de Funcionalidade):</strong> Um método que parece mais interessado nos dados de outra classe.</li>
+                </ul>
+                 <p class="quote"><strong>Analogia (Feature Envy):</strong> É o método fofoqueiro. Ele vive em uma casa (classe A), mas passa o dia todo na janela cuidando da vida da vizinha (classe B). A solução é simples: mandá-lo para a casa certa!</p>
+                <h3>Exemplo: Feature Envy</h3>
+                <pre><code>class Pedido:
+    def __init__(self, itens, cliente):
+        self.itens = itens
+        self.cliente = cliente
+        
+class Cliente:
+    def __init__(self, nome, vip):
+        self.nome = nome
+        self.vip = vip
+
+    def calcular_desconto(self, pedido: Pedido):
+        total = sum(item.preco for item in pedido.itens)
+        if total > 1000:
+            return total * 0.10
+        return 0
+</code></pre>
+            </div>
+        </div>
+        
+        <div class="slide">
+            <div class="audience-view">
+                <h2>Principais Code Smells (Parte 2)</h2>
+                <ul>
+                    <li><strong>Obsessão por Tipos Primitivos:</strong> Usar tipos simples (string, dict) para representar conceitos complexos (Endereço, Moeda).</li>
+                    <li><strong>Comentários Explicativos:</strong> Comentários usados para explicar um código confuso. O bom código é autoexplicativo.</li>
+                </ul>
+                <p class="quote"><strong>Analogia (Tipos Primitivos):</strong> Usar um dicionário para representar um Endereço é como usar uma folha de papel em branco para uma ficha médica. Uma classe `Endereco` é a ficha com campos definidos (rua, número), validações e comportamentos próprios (como `formatar_para_etiqueta`).</p>
+                <h3>Exemplo: Obsessão por Tipos Primitivos</h3>
+                <pre><code>def enviar_correspondencia(endereco: dict):
+    print(f"Enviando para {endereco['rua']}, {endereco['numero']}")
+
+class Endereco:
+    def __init__(self, rua, numero, cidade):
+        self.rua = rua
+        self.numero = numero
+        self.cidade = cidade
+    
+    def texto_completo(self):
+        return f"{self.rua}, {self.numero} - {self.cidade}"
+
+def enviar_correspondencia(endereco: Endereco):
+    print(f"Enviando para {endereco.texto_completo()}")
+</code></pre>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="audience-view center-content">
+                <h2>Conclusão</h2>
+                <p>Refactoring não é uma tarefa separada, mas uma parte contínua e essencial do desenvolvimento de software.</p>
+                <p class="quote">É como ser um jardineiro cuidadoso: em vez de deixar o jardim do software ser tomado por ervas daninhas (complexidade), você o poda e organiza constantemente, garantindo que ele cresça de forma saudável e sustentável.</p>
+                <p>É o hábito de "limpar o código" para combater a complexidade, garantindo que o software permaneça saudável, flexível e fácil de manter.</p>
+            </div>
+        </div>
+
+    </div>
+    
+    <div id="navigation">
+        <button id="prev-btn">Anterior</button>
+        <span id="slide-counter"></span>
+        <button id="next-btn">Próximo</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const slideCounter = document.getElementById('slide-counter');
+        
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            slides.forEach((slide) => {
+                slide.classList.remove('active');
+            });
+            
+            slides[index].classList.add('active');
+            slideCounter.textContent = `${index + 1} / ${totalSlides}`;
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            currentSlide = Math.max(0, Math.min(totalSlides - 1, currentSlide + direction));
+            showSlide(currentSlide);
+        }
+        
+        prevBtn.addEventListener('click', () => changeSlide(-1));
+        nextBtn.addEventListener('click', () => changeSlide(1));
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                if(currentSlide > 0) changeSlide(-1);
+            } else if (e.key === 'ArrowRight') {
+                if(currentSlide < totalSlides - 1) changeSlide(1);
+            }
+        });
+
+        showSlide(currentSlide);
+    });
+</script>
+
+</body>
+</html>
